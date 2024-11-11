@@ -5,7 +5,7 @@ import os
 import streamlit as st
 
 # DEFAULT_API_KEY = os.environ.get("TOGETHER_API_KEY")
-DEFAULT_API_KEY = "54fba08e276ccacaafa282bpip9ba33ce8c2f72e53605fb4d22782b0ade9b1eacfe"
+DEFAULT_API_KEY = "5f801649c268c61a070b2df5502ffd57a4574678832a53a8df971aec6c5cbb82"
 DEFAULT_BASE_URL = "https://api.together.xyz/v1"
 DEFAULT_MODEL = "meta-llama/Llama-Vision-Free"
 DEFAULT_TEMPERATURE = 0.7
