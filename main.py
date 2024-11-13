@@ -130,3 +130,40 @@ for message in conversation_history:
     if message["role"] != "system":
         with st.chat_message(message["role"]):
             st.write(message["content"])
+
+#Option Chatbot with Sidebar
+with st.sidebar:
+    st.write("Option")
+    set_token = st.slider("Max Tokens Per Message", min_value=10, max_value=512, value=DEFAULT_MAX_TOKENS, step=1, disabled=False)
+    st.session_state['chat_manager'].max_tokens = set_token
+    
+    set_temp = st.slider("Temperature", min_value=0.0, max_value=1.0, value=DEFAULT_TEMPERATURE, step=0.1, disabled=False)
+    st.session_state['chat_manager'].temperature = set_temp
+    
+    set_custom_message = st.selectbox("System Message",("Custom", "Profesional", "Friendly", "Humorous"))
+    if set_custom_message == "Custom":
+        custom_message = st.text_area(
+            "Custom System Message", 
+            key="custom_message", 
+            value=chat_manager.system_message
+        )
+    elif set_custom_message == "Profesional" :
+        custom_message = "You are a professional assistant. You provide accurate and reliable information, and you are always willing to answer questions and help the user achieve their goals."
+    elif set_custom_message == "Friendly":
+        custom_message = "You are a friendly and supportive guide. You answer questions with kindness, encouragement, and patience, always looking to help the user feel comfortable and confident." 
+    elif set_custom_message == "Humorous":
+        custom_message = "You are a humorous companion, adding fun to the conversation." 
+
+    if st.button("Set Custom Message", on_click=lambda: setattr(chat_manager, "system_message", custom_message)):
+        chat_manager.reset_conversation_history()
+        st.session_state['conversation_history'] = chat_manager.conversation_history
+        st.session_state['chat_manager'] = chat_manager
+        st.rerun()
+
+    if st.button("Reset Conversation"):
+        chat_manager.reset_conversation_history()
+        st.session_state['conversation_history'] = chat_manager.conversation_history
+        st.rerun()
+
+    st.write("Current max_tokens:", st.session_state['chat_manager'].max_tokens)
+    st.write("Current temperature:", st.session_state['chat_manager'].temperature)
