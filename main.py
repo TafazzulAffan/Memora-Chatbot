@@ -101,7 +101,7 @@ def get_instance_id():
         return "Instance ID not available (running locally or error in retrieval)"
 
 ### Streamlit code ###
-st.title("AI Chatbot")
+st.title("Memora")
 
 # Display EC2 Instance ID
 instance_id = get_instance_id()
