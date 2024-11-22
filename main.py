@@ -179,9 +179,6 @@ if chat_selection is not None and chat_selection < len(st.session_state['chats']
         # Update the chat topic based on the summary of all user inputs
         current_chat['topic'] = f"{summarize_conversation(conversation_history)}"
 
-    # Display selected chat with updated topic
-    st.title(f"Chat: {current_chat['topic']}")
-
     # Display the conversation history
     for message in conversation_history:
         if message["role"] != "system":
