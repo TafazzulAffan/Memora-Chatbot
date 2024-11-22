@@ -13,20 +13,13 @@ DEFAULT_MAX_TOKENS = 512
 DEFAULT_TOKEN_BUDGET = 4096
 
 class ConversationManager:
-    def __init__(self, api_key=None, base_url=None, model=None, temperature=None, max_tokens=None, token_budget=None):
-        if not api_key:
-            api_key = DEFAULT_API_KEY
-        if not base_url:
-            base_url = DEFAULT_BASE_URL
-            
+    def __init__(self, api_key=DEFAULT_API_KEY, base_url=DEFAULT_BASE_URL, model=DEFAULT_MODEL, temperature=DEFAULT_TEMPERATURE, max_tokens=DEFAULT_MAX_TOKENS, token_budget=DEFAULT_TOKEN_BUDGET):
         self.client = OpenAI(api_key=api_key, base_url=base_url)
-
-        self.model = model if model else DEFAULT_MODEL
-        self.temperature = temperature if temperature else DEFAULT_TEMPERATURE
-        self.max_tokens = max_tokens if max_tokens else DEFAULT_MAX_TOKENS
-        self.token_budget = token_budget if token_budget else DEFAULT_TOKEN_BUDGET
-
-        self.system_message = "You are a friendly and supportive guide. You answer questions with kindness, encouragement, and patience, always looking to help the user feel comfortable and confident."  # Default persona
+        self.model = model
+        self.temperature = temperature
+        self.max_tokens = max_tokens
+        self.token_budget = token_budget
+        self.system_message = "You are a friendly and supportive guide. You answer questions with kindness, encouragement, and patience, always looking to help the user feel comfortable and confident."
         self.conversation_history = [{"role": "system", "content": self.system_message}]
 
     def count_tokens(self, text):
@@ -77,8 +70,15 @@ class ConversationManager:
 
         return ai_response
     
-    def reset_conversation_history(self):
-        self.conversation_history = [{"role": "system", "content": self.system_message}]
+    def reset_conversation_history(self, preserve_history=True):
+        system_message_entry = {"role": "system", "content": self.system_message}
+        if preserve_history:
+            if self.conversation_history:
+                self.conversation_history[0] = system_message_entry
+            else:
+                self.conversation_history.append(system_message_entry)
+        else:
+            self.conversation_history = [system_message_entry] + self.conversation_history[1:]
 
 def get_instance_id():
     """Retrieve the EC2 instance ID from AWS metadata using IMDSv2."""
@@ -107,63 +107,113 @@ st.title("Memora")
 instance_id = get_instance_id()
 st.write(f"**EC2 Instance ID**: {instance_id}")
 
-# Initialize the ConversationManager object
-if 'chat_manager' not in st.session_state:
-    st.session_state['chat_manager'] = ConversationManager()
+# Initialize Session State for Chats
+if 'chats' not in st.session_state:
+    st.session_state['chats'] = []
 
-chat_manager = st.session_state['chat_manager']
+# Function to start a new chat
+def start_new_chat():
+    st.session_state['chats'].append({'chat_manager': ConversationManager(), 'conversation_history': [], 'topic': 'New Chat'})
 
-if 'conversation_history' not in st.session_state:
-    st.session_state['conversation_history'] = chat_manager.conversation_history
+# Function to delete the selected chat
+def delete_selected_chat(chat_index):
+    if 0 <= chat_index < len(st.session_state['chats']):
+        del st.session_state['chats'][chat_index]
 
-conversation_history = st.session_state['conversation_history']
+# Chat selection
+st.sidebar.title("Chats")
+if st.sidebar.button("New Chat"):
+    start_new_chat()
 
-# Chat input from the user
-user_input = st.chat_input("Write a message")
+chat_selection = st.sidebar.selectbox("Select a chat", range(len(st.session_state['chats'])), format_func=lambda x: st.session_state['chats'][x]['topic'])
 
-# Call the chat manager to get a response from the AI
-if user_input:
-    response = chat_manager.chat_completion(user_input)
+# Button to delete the selected chat
+if chat_selection is not None and st.sidebar.button("Delete Selected Chat"):
+    delete_selected_chat(chat_selection)
+    chat_selection = None  # Reset chat selection after deletion
 
-# Display the conversation history
-for message in conversation_history:
-    if message["role"] != "system":
-        with st.chat_message(message["role"]):
-            st.write(message["content"])
+# Function to summarize the conversation history
+def summarize_conversation(conversation_history):
+    user_messages = [msg['content'] for msg in conversation_history if msg['role'] == 'user']
+    return " | ".join(user_messages)[:30]  # Summarize the first 30 characters of all user messages
 
-#Option Chatbot with Sidebar
-with st.sidebar:
-    st.write("Option")
-    set_token = st.slider("Max Tokens Per Message", min_value=10, max_value=512, value=DEFAULT_MAX_TOKENS, step=1, disabled=False)
-    st.session_state['chat_manager'].max_tokens = set_token
-    
-    set_temp = st.slider("Temperature", min_value=0.0, max_value=1.0, value=DEFAULT_TEMPERATURE, step=0.1, disabled=False)
-    st.session_state['chat_manager'].temperature = set_temp
-    
-    set_custom_message = st.selectbox("System Message",("Custom", "Profesional", "Friendly", "Humorous"))
-    if set_custom_message == "Custom":
-        custom_message = st.text_area(
-            "Custom System Message", 
-            key="custom_message", 
-            value=chat_manager.system_message
-        )
-    elif set_custom_message == "Profesional" :
-        custom_message = "You are a professional assistant. You provide accurate and reliable information, and you are always willing to answer questions and help the user achieve their goals."
-    elif set_custom_message == "Friendly":
-        custom_message = "You are a friendly and supportive guide. You answer questions with kindness, encouragement, and patience, always looking to help the user feel comfortable and confident." 
-    elif set_custom_message == "Humorous":
-        custom_message = "You are a humorous companion, adding fun to the conversation." 
+# Ensure chat_selection is not None
+if chat_selection is not None and chat_selection < len(st.session_state['chats']):
+    # Initialize the ConversationManager object for the selected chat
+    current_chat = st.session_state['chats'][chat_selection]
+    chat_manager = current_chat['chat_manager']
+    conversation_history = current_chat['conversation_history']
 
-    if st.button("Set Custom Message", on_click=lambda: setattr(chat_manager, "system_message", custom_message)):
-        chat_manager.reset_conversation_history()
-        st.session_state['conversation_history'] = chat_manager.conversation_history
-        st.session_state['chat_manager'] = chat_manager
-        st.rerun()
+    # Function to read file content
+    def read_file(file):
+        try:
+            return file.read().decode("utf-8")
+        except UnicodeDecodeError:
+            try:
+                return file.read().decode("latin-1")
+            except Exception as e:
+                st.error(f"Error reading file: {e}")
+                return None
 
-    if st.button("Reset Conversation"):
-        chat_manager.reset_conversation_history()
-        st.session_state['conversation_history'] = chat_manager.conversation_history
-        st.rerun()
+    # File input from the user
+    uploaded_file = st.file_uploader("Upload a file")
 
-    st.write("Current max_tokens:", st.session_state['chat_manager'].max_tokens)
-    st.write("Current temperature:", st.session_state['chat_manager'].temperature)
+    # Process the uploaded file
+    file_content = None
+    if uploaded_file is not None:
+        file_content = read_file(uploaded_file)
+        if file_content:
+            st.session_state['file_content'] = file_content
+            st.write("File content successfully uploaded and read.")
+
+    # Chat input from the user
+    user_input = st.chat_input("Write a message")
+
+    # Call the chat manager to get a response from the AI
+    if user_input or file_content:
+        prompt = user_input or file_content
+        response = chat_manager.chat_completion(prompt)
+        conversation_history.append({"role": "user", "content": prompt})
+        conversation_history.append({"role": "assistant", "content": response})
+
+        # Update the chat topic based on the summary of all user inputs
+        current_chat['topic'] = f"{summarize_conversation(conversation_history)}"
+
+    # Display selected chat with updated topic
+    st.title(f"Chat: {current_chat['topic']}")
+
+    # Display the conversation history
+    for message in conversation_history:
+        if message["role"] != "system":
+            with st.chat_message(message["role"]):
+                st.write(message["content"])
+
+    # Option Chatbot with Sidebar
+    with st.sidebar:
+        st.write("Options")
+        set_token = st.slider("Max Tokens Per Message", min_value=10, max_value=512, value=DEFAULT_MAX_TOKENS, step=1, disabled=False)
+        chat_manager.max_tokens = set_token
+
+        set_temp = st.slider("Temperature", min_value=0.0, max_value=1.0, value=DEFAULT_TEMPERATURE, step=0.1, disabled=False)
+        chat_manager.temperature = set_temp
+
+        set_custom_message = st.selectbox("System Message", ("Custom", "Professional", "Friendly", "Humorous"), key="system_message_selectbox")
+        if set_custom_message == "Custom":
+            custom_message = st.text_area(
+                "Custom System Message",
+                key="custom_message",
+                value=chat_manager.system_message
+            )
+        elif set_custom_message == "Professional":
+            custom_message = "You are a professional assistant. You provide accurate and reliable information, and you are always willing to answer questions and help the user achieve their goals."
+        elif set_custom_message == "Friendly":
+            custom_message = "You are a friendly and supportive guide. You answer questions with kindness, encouragement, and patience, always looking to help the user feel comfortable and confident."
+        elif set_custom_message == "Humorous":
+            custom_message = "You are a humorous companion, adding fun to the conversation."
+
+        if st.button("Set Custom Message", on_click=lambda: setattr(chat_manager, "system_message", custom_message)):
+            chat_manager.reset_conversation_history(preserve_history=True)
+
+        if st.button("Reset Conversation"):
+            chat_manager.reset_conversation_history(preserve_history=False)
+            conversation_history.clear()
