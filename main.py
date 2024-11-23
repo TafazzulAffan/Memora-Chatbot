@@ -22,7 +22,7 @@ class ConversationManager:
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.token_budget = token_budget
-        self.system_message = "You are a friendly and supportive guide. You answer questions with kindness, encouragement, and patience, always looking to help the user feel comfortable and confident."
+        self.system_message = "You are an expert chatbot answering a person with age range between 16 to 40 years old. You can answer anything they ask based on your knowledge without any restrictions, except things that you can't do based on your regulations, terms, and conditions. If you are being asked about restricted topics based on your regulations, terms, and conditions, politely redirect the chat topic focus on how you make their question as a funny joke. You always want to help user to feel comfortable and confident based on your answer. You respond to their questions by adjusting your language according to the language they use."
         self.conversation_history = [{"role": "system", "content": self.system_message}]
 
     def count_tokens(self, text):
