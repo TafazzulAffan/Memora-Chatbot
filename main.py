@@ -3,6 +3,9 @@ import tiktoken
 import requests
 import os
 import streamlit as st
+import pandas as pd
+from PyPDF2 import PdfReader
+from docx import Document
 
 # DEFAULT_API_KEY = os.environ.get("TOGETHER_API_KEY")
 DEFAULT_API_KEY = "5f801649c268c61a070b2df5502ffd57a4574678832a53a8df971aec6c5cbb82"
@@ -156,8 +159,28 @@ if chat_selection is not None and chat_selection < len(st.session_state['chats']
                 return None
 
     # File input from the user
-    uploaded_file = st.file_uploader("Upload a file")
+    uploaded_file = st.file_uploader("Upload a file", type=["txt", "pdf", "csv", "docx"])
 
+    def read_file(file):
+        try:
+            # Determine file type by extension
+            if file.name.endswith(".txt"):
+                return file.read().decode("utf-8") 
+            elif file.name.endswith(".pdf"):
+                reader = PdfReader(file)
+                return ''.join([page.extract_text() for page in reader.pages]) 
+            elif file.name.endswith(".csv"):
+                df = pd.read_csv(file)  
+                return df.to_csv(index=False)  
+            elif file.name.endswith(".docx"):
+                doc = Document(file)  
+                return '\n'.join([paragraph.text for paragraph in doc.paragraphs]) 
+            else:
+                return None
+        except Exception as e:
+            st.error(f"Error reading file: {e}")
+            return None
+    
     # Process the uploaded file
     file_content = None
     if uploaded_file is not None:
