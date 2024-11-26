@@ -154,7 +154,7 @@ def get_chat_message(contents: str, align: str = "left") -> str:
     formatted_contents = f"""
     <div class="{div_class}">
         {icon_code}
-        <div class="chat-bubble" style="background: {color};">
+        <div class="chat-bubble">
             {contents}
         </div>
     </div>
@@ -204,7 +204,6 @@ st.title("Memora")
 
 # Display EC2 Instance ID
 instance_id = get_instance_id()
-st.write(f"**EC2 Instance ID**: {instance_id}")
 
 if 'chat_selection' not in st.session_state:
     st.session_state['chat_selection'] = None
@@ -276,7 +275,7 @@ if chat_selection is not None and chat_selection < len(st.session_state['chats']
 
     
     # File input from the user
-    uploaded_file = st.file_uploader("Upload a file", type=["txt", "pdf", "docx"])
+    uploaded_file = st.file_uploader("", type=["txt", "pdf", "docx"])
 
     def read_file(file):
         try:
@@ -361,3 +360,5 @@ if chat_selection is not None and chat_selection < len(st.session_state['chats']
 
         if st.button("Set Custom Message", on_click=lambda: setattr(chat_manager, "system_message", custom_message)):
             chat_manager.reset_conversation_history(preserve_history=True)
+        
+        st.write(f"**EC2 Instance ID**: {instance_id}")
