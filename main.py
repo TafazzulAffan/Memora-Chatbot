@@ -141,7 +141,7 @@ def get_chat_message(contents: str, align: str = "left") -> str:
     """Menghasilkan balon percakapan dengan ikon."""
     div_class = "AI-chat"
     color = "#f1f0f0" 
-    file_path = os.path.join("assets", "AI_icon.png")  
+    file_path = os.path.join("assets", "ai_icon.png")  
 
     if align == "right":  
         div_class = "user-chat"
