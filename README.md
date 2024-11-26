@@ -2,7 +2,7 @@
 
 Welcome to the Memora Chatbot repository! This project is made by Team 2 CendekiAwan RevoU to demonstrate how we build an intelligent chatbot using AWS Architecture, featuring Streamlit and SQLite. The chatbot provides real-time responses and allows users to manage and retrieve past conversations. User can also choose how Memora would behave in three mode: Professional, Friendly, or Humorous. Uploading a file is available and users can ask anything about it to Memora.
 
-<img src="https://github.com/givkashi/Chatbot-Langchain-Streamlite/blob/main/img.png" width="70%" height="70%"/>
+<img src=https://raw.githubusercontent.com/MFRDS/Team2-CDK-Chatbot/refs/heads/main/assets/memora.jpg width="70%" height="70%"/>
 
 ## Features
 
