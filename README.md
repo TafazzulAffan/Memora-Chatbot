@@ -18,7 +18,6 @@ To get started with the project, follow these steps:
 1. **Clone the repository**:
     ```bash
     git clone https://github.com/MFRDS/Team2-CDK-Chatbot.git
-    cd chatbot-streamlit-langchain-sqlite
     ```
 
 2. **Install the required libraries**:
