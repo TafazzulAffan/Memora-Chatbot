@@ -17,6 +17,11 @@ DEFAULT_TEMPERATURE = 0.7
 DEFAULT_MAX_TOKENS = 500
 DEFAULT_TOKEN_BUDGET = 4096
 
+st.set_page_config(
+    page_title="Memora",
+    page_icon="assets/ai_icon.png",
+)
+
 class ConversationManager:
     def __init__(self,chat_id=None, api_key=DEFAULT_API_KEY, base_url=DEFAULT_BASE_URL, model=DEFAULT_MODEL, temperature=DEFAULT_TEMPERATURE, max_tokens=DEFAULT_MAX_TOKENS, token_budget=DEFAULT_TOKEN_BUDGET):
         self.chat_id = chat_id
