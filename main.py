@@ -62,7 +62,6 @@ class ConversationManager:
         finally:
             session.close()
 
-
     def count_tokens(self, text):
         try:
             encoding = tiktoken.encoding_for_model(self.model)
@@ -200,7 +199,13 @@ def load_all_chats():
         session.close()
 
 ### Streamlit code ###
-st.title("Memora")
+
+# Create three columns
+col1, col2, col3 = st.columns([1, 3, 1])
+
+# Displaying images in the center column
+with col2:
+    st.image("assets/MemoraNewFull.png", width=400)
 
 # Display EC2 Instance ID
 instance_id = get_instance_id()
@@ -223,6 +228,7 @@ if 'chats' not in st.session_state:
             'conversation_history': history,
             'topic': topic  
         })
+
 # Function to start a new chat
 def start_new_chat():
     chat_id = str(uuid.uuid4())  
@@ -232,7 +238,6 @@ def start_new_chat():
         'topic': 'New Chat'
     })  
     st.session_state['chat_selection'] = len(st.session_state['chats']) - 1
-
 
 # Function to delete the selected chat
 def delete_selected_chat(chat_index):
@@ -253,13 +258,10 @@ if len(st.session_state['chats']) > 0:
     )
     st.session_state['chat_selection'] = chat_selection
 
-
 # Button to delete the selected chat
 if chat_selection is not None and st.sidebar.button("Delete Selected Chat"):
     delete_selected_chat(chat_selection)
     chat_selection = None  
-
-
 
 # Function to summarize the conversation history
 def summarize_conversation(conversation_history):
@@ -273,7 +275,6 @@ if chat_selection is not None and chat_selection < len(st.session_state['chats']
     chat_manager = current_chat['chat_manager']
     conversation_history = current_chat['conversation_history']
 
-    
     # File input from the user
     uploaded_file = st.file_uploader("", type=["txt", "pdf", "docx"])
 
@@ -291,7 +292,6 @@ if chat_selection is not None and chat_selection < len(st.session_state['chats']
                 return "Unsupported file format"
         except Exception as e:
             return f"Error reading file: {e}"
-
   
     # Process the uploaded file
     file_content = None
@@ -301,7 +301,6 @@ if chat_selection is not None and chat_selection < len(st.session_state['chats']
             file_content = file_content 
             file_used = False 
             st.success("File successfully uploaded. It will be processed after you type a message.")
-
 
     # Chat input from the user
     user_input = st.chat_input("Write a message")
@@ -330,7 +329,6 @@ if chat_selection is not None and chat_selection < len(st.session_state['chats']
             st.markdown(get_chat_message(message["content"], align="right"), unsafe_allow_html=True)
         elif message["role"] == "assistant":  
             st.markdown(get_chat_message(message["content"], align="left"), unsafe_allow_html=True)
-
 
     # Option Chatbot with Sidebar
     with st.sidebar:
@@ -362,3 +360,4 @@ if chat_selection is not None and chat_selection < len(st.session_state['chats']
             chat_manager.reset_conversation_history(preserve_history=True)
         
         st.write(f"**EC2 Instance ID**: {instance_id}")
+        
