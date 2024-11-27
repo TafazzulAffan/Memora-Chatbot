@@ -6,12 +6,10 @@ footer {
     visibility: hidden;
 }
 
-
 .appview-container .main .block-container {
     padding-top: 3rem;
     padding-bottom: 2rem;
 }
-
 
 .user-chat {
     display: flex;
@@ -55,7 +53,6 @@ footer {
     color: #333;
 }
 
-
 .chat-bubble {
     display: inline-block;
     padding: 0.625rem 0.9375rem; /* Equivalent to 10px 15px (16px base) */
@@ -67,7 +64,6 @@ footer {
     background-color: #FEFAF3; /* Optional background color */
     color: #333; /* Optional text color */
 }
-
 
 @media (max-width: 768px) {
     .chat-bubble {
