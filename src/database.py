@@ -11,9 +11,9 @@ class Conversation(Base):
     __tablename__ = 'conversations'
     
     id = Column(Integer, primary_key=True, index=True)
-    role = Column(String, index=True)  # 'user' or 'assistant'
+    role = Column(String, index=True)  
     content = Column(Text)
-    chat_id = Column(Integer, index=True)  # Unique identifier for each chat session
+    chat_id = Column(Integer, index=True)  
 
 # Create engine and session
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
