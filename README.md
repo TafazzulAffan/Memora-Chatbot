@@ -7,7 +7,7 @@ Welcome to the Memora Chatbot repository! This project is made by Team 2 Cendeki
 ## Features
 
 - **Interactive UI**: Built with Streamlit for a user-friendly interface.
-- **Conversation Management**: Switch between bot behavior and recall past conversations using SQLite.
+- **Conversation Management**: Switch between bot behavior and recall past conversations using SQL Alchemy.
 - **Advanced Language Model**: Utilizes Llama and OpenAI for conversational AI tasks.
 - **Read File Capability**: Provides file reading capability and simple explanation.
 
@@ -40,13 +40,13 @@ To get started with the project, follow these steps:
 
 ## Appendix
 
-- **AWS EC2 Instance Architecture**: Lorem ipsum sit dolor amet.
-- **Streamlit**: Lorem ipsum sit dolor amet.
-- **SQL Alchemy**: Lorem ipsum sit dolor amet.
-- **OpenAI**: Lorem ipsum sit dolor amet.
-- **Tiktoken**: Lorem ipsum sit dolor amet.
-- **python-docx**: Lorem ipsum sit dolor amet.
-- **Fitz (PyMuPDF)**: Lorem ipsum sit dolor amet.
+- **AWS EC2 Instance Architecture**: Cloud-based infrastructure for scalable and secure application deployment.
+- **Streamlit**: Framework for creating interactive web apps directly from Python scripts.
+- **SQL Alchemy**: Powerful library for database interactions using ORM and raw SQL.
+- **OpenAI**: AI models for natural language processing and conversational AI capabilities.
+- **Tiktoken**: Efficient tokenization for optimized performance with OpenAI models.
+- **python-docx**: Create, edit, and extract data from Word documents.
+- **Fitz (PyMuPDF)**: Tool for processing and extracting content from PDF files.
 
 ## Copyright
 
