@@ -1,4 +1,4 @@
-# Memora Chatbot with AWS ft. Streamlit and SQL Alchemy <a href="http://team2-alb-127132480.ap-southeast-1.elb.amazonaws.com/" target="_blank"> <img align="center" src="https://raw.githubusercontent.com/MFRDS/Team2-CDK-Chatbot/refs/heads/main/assets/ai_icon.png" height="30" width="30" /></a>
+# Memora Chatbot by Team 2 CendekiAwan RevoU x AWS <a href="http://team2-alb-127132480.ap-southeast-1.elb.amazonaws.com/" target="_blank"> <img align="center" src="https://raw.githubusercontent.com/MFRDS/Team2-CDK-Chatbot/refs/heads/main/assets/ai_icon.png" height="30" width="30" /></a>
 
 Welcome to the Memora Chatbot repository! This project is made by Team 2 CendekiAwan RevoU to demonstrate how we build an intelligent chatbot using AWS Architecture, featuring Streamlit and SQL Alchemy. The chatbot provides real-time responses and allows users to manage and retrieve past conversations. User can also choose how Memora would behave in three mode: Professional, Friendly, or Humorous. Uploading a file is available and users can ask anything about it to Memora.
 
