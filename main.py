@@ -191,6 +191,7 @@ def get_instance_id():
     except requests.exceptions.RequestException:
         return "Instance ID not available (running locally or error in retrieval)"
 
+# Load all chats from the database
 def load_all_chats():
     session = SessionLocal()
     try:
@@ -200,8 +201,7 @@ def load_all_chats():
         for chat in chats:
             if chat.chat_id not in grouped_chats:
                 grouped_chats[chat.chat_id] = []
-            
-            # Filter out file content from the history
+
             if "Additional context from file:" not in chat.content:
                 grouped_chats[chat.chat_id].append({"role": chat.role, "content": chat.content})
         
@@ -211,6 +211,39 @@ def load_all_chats():
         return {}
     finally:
         session.close()
+
+#  delete a conversation from the database and update session state
+def delete_conversation(chat_id, chat_index):
+    session = SessionLocal()
+    try:
+        rows_deleted = session.query(Conversation).filter(Conversation.chat_id == chat_id).delete()
+        session.commit()
+
+        if rows_deleted > 0:
+            print(f"Conversation with chat_id {chat_id} deleted from DB.")
+        else:
+            print(f"No conversation found with chat_id {chat_id}.")
+        
+        del st.session_state['chats'][chat_index]
+
+        if chat_index >= len(st.session_state['chats']):
+            st.session_state['chat_selection'] = None
+        else:
+            st.session_state['chat_selection'] = chat_index
+        st.experimental_rerun()
+
+    except Exception as e:
+        print(f"Error deleting conversation: {e}")
+        session.rollback()
+    finally:
+        session.close()
+        
+# delete a selected chat from session state using index
+def delete_selected_chat(chat_index):
+    if 0 <= chat_index < len(st.session_state['chats']):
+        chat_id = st.session_state['chats'][chat_index]['chat_manager'].chat_id  
+        delete_conversation(chat_id, chat_index)  
+        st.session_state['chat_selection'] = None  
 
 
 ### Streamlit code ###
@@ -253,10 +286,6 @@ def start_new_chat():
     st.session_state['chat_selection'] = len(st.session_state['chats']) - 1
     st.session_state['file_used'] = False
 
-# Function to delete the selected chat
-def delete_selected_chat(chat_index):
-    if 0 <= chat_index < len(st.session_state['chats']):
-        del st.session_state['chats'][chat_index]
 
 # Chat selection
 st.sidebar.title("Chats")
@@ -274,8 +303,7 @@ if len(st.session_state['chats']) > 0:
 
 # Button to delete the selected chat
 if chat_selection is not None and st.sidebar.button("Delete Selected Chat"):
-    delete_selected_chat(chat_selection)
-    chat_selection = None  
+    delete_selected_chat(chat_selection)   
 
 # Function to summarize the conversation history
 def summarize_conversation(conversation_history):
