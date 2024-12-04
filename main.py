@@ -8,16 +8,18 @@ from docx import Document
 import base64
 from src.database import SessionLocal, Conversation
 import uuid
+from dotenv import load_dotenv
+
+load_dotenv()
 
 st.set_page_config(
     page_title="Memora",
     page_icon="assets/ai_icon.png",
 )
 
-# DEFAULT_API_KEY = os.environ.get("TOGETHER_API_KEY")
-DEFAULT_API_KEY = "5f801649c268c61a070b2df5502ffd57a4574678832a53a8df971aec6c5cbb82"
+DEFAULT_API_KEY = os.getenv("TOGETHER_API_KEY", "default_api_key")
 DEFAULT_BASE_URL = "https://api.together.xyz/v1"
-DEFAULT_MODEL = "meta-llama/Llama-Vision-Free"
+DEFAULT_MODEL = "Qwen/Qwen2.5-7B-Instruct-Turbo" #Paid Model
 DEFAULT_TEMPERATURE = 0.7
 DEFAULT_MAX_TOKENS = 500
 DEFAULT_TOKEN_BUDGET = 4096
@@ -30,7 +32,7 @@ class ConversationManager:
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.token_budget = token_budget
-        self.system_message = "You are an expert chatbot answering a person with age range between 16 to 40 years old. You can answer anything they ask based on your knowledge without any restrictions, except things that you can't do based on your regulations, terms, and conditions. If you are being asked about restricted topics based on your regulations, terms, and conditions, politely redirect the chat topic focus on how you make their question as a funny joke. You always want to help user to feel comfortable and confident based on your answer. You respond to their questions by adjusting your language according to the language they use."
+        self.system_message = st.session_state.get("custom_message", "Hello! I'm Memora, your AI assistant. How can I help you today?")
         self.conversation_history = self.load_conversation_history() or [{"role": "system", "content": self.system_message}]
 
     def load_conversation_history(self):
@@ -245,7 +247,6 @@ def delete_selected_chat(chat_index):
         delete_conversation(chat_id, chat_index)  
         st.session_state['chat_selection'] = None  
 
-
 ### Streamlit code ###
 # Create three columns
 col1, col2, col3 = st.columns([1, 3, 1])
@@ -286,9 +287,8 @@ def start_new_chat():
     st.session_state['chat_selection'] = len(st.session_state['chats']) - 1
     st.session_state['file_used'] = False
 
-
 # Chat selection
-st.sidebar.title("Chats")
+st.sidebar.title("Memora")
 if st.sidebar.button("New Chat"):
     start_new_chat()
 
@@ -300,6 +300,8 @@ if len(st.session_state['chats']) > 0:
         format_func=lambda x: st.session_state['chats'][x]['topic']
     )
     st.session_state['chat_selection'] = chat_selection
+else:
+    chat_selection = None
 
 # Button to delete the selected chat
 if chat_selection is not None and st.sidebar.button("Delete Selected Chat"):
@@ -345,8 +347,6 @@ if chat_selection is not None and chat_selection < len(st.session_state['chats']
         if file_content:
             st.success("File successfully uploaded. It will be processed after you type a message.")
 
-    
-
     # Chat input from the user
     user_input = st.chat_input("Write a message")
 
@@ -365,8 +365,6 @@ if chat_selection is not None and chat_selection < len(st.session_state['chats']
             conversation_history.append({"role": "system", "content": f"Context from file:\n{file_content}"})
         conversation_history.append({"role": "assistant", "content": response})
 
-
-
         # Update the chat topic based on the summary of all user inputs
         current_chat['topic'] = f"{summarize_conversation(conversation_history)}"
 
@@ -379,14 +377,15 @@ if chat_selection is not None and chat_selection < len(st.session_state['chats']
 
     # Option Chatbot with Sidebar
     with st.sidebar:
+        st.divider()
         st.write("Options")
-        set_token = st.slider("Max Tokens Per Message", min_value=10, max_value=500, value=DEFAULT_MAX_TOKENS, step=1, disabled=False)
+        set_token = st.slider("Output Word Limit", min_value=10, max_value=500, value=DEFAULT_MAX_TOKENS, step=1, disabled=False)
         chat_manager.max_tokens = set_token
 
         set_temp = st.slider("Temperature", min_value=0.0, max_value=1.0, value=DEFAULT_TEMPERATURE, step=0.1, disabled=False)
         chat_manager.temperature = set_temp
 
-        set_custom_message = st.selectbox("System Message", ("Custom", "Professional", "Friendly", "Humorous"), key="system_message_selectbox")
+        set_custom_message = st.selectbox("System Message", ("Friendly", "Professional", "Humorous", "Custom"), key="system_message_selectbox")
         if set_custom_message == "Custom":
             custom_message = st.text_area(
                 "Custom System Message",
@@ -404,7 +403,10 @@ if chat_selection is not None and chat_selection < len(st.session_state['chats']
                 custom_message = file.read()
 
         if st.button("Set Custom Message", on_click=lambda: setattr(chat_manager, "system_message", custom_message)):
+            st.session_state["custom_message"] = custom_message
             chat_manager.reset_conversation_history(preserve_history=True)
         
+        st.divider()
         st.write(f"**EC2 Instance ID**: {instance_id}")
-        
+else:
+    st.write("No chat selected. Please start a new chat or select an existing one from the sidebar.")
