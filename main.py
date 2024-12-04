@@ -32,7 +32,7 @@ class ConversationManager:
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.token_budget = token_budget
-        self.system_message = st.session_state.get("custom_message", "Hello! I'm Memora, your AI assistant. How can I help you today?")
+        self.system_message = "Hello! I'm Memora, your AI assistant. How can I help you today?"
         self.conversation_history = self.load_conversation_history() or [{"role": "system", "content": self.system_message}]
 
     def load_conversation_history(self):
@@ -382,10 +382,11 @@ if chat_selection is not None and chat_selection < len(st.session_state['chats']
         set_token = st.slider("Output Word Limit", min_value=10, max_value=500, value=DEFAULT_MAX_TOKENS, step=1, disabled=False)
         chat_manager.max_tokens = set_token
 
-        set_temp = st.slider("Temperature", min_value=0.0, max_value=1.0, value=DEFAULT_TEMPERATURE, step=0.1, disabled=False)
+        set_temp = st.slider("Performance", min_value=0.0, max_value=1.0, value=DEFAULT_TEMPERATURE, step=0.1, disabled=False)
         chat_manager.temperature = set_temp
 
-        set_custom_message = st.selectbox("System Message", ("Friendly", "Professional", "Humorous", "Custom"), key="system_message_selectbox")
+        set_custom_message = st.selectbox("System Message", ("Custom", "Professional", "Friendly", "Humorous"), key="system_message_selectbox")
+
         if set_custom_message == "Custom":
             custom_message = st.text_area(
                 "Custom System Message",
@@ -403,10 +404,10 @@ if chat_selection is not None and chat_selection < len(st.session_state['chats']
                 custom_message = file.read()
 
         if st.button("Set Custom Message", on_click=lambda: setattr(chat_manager, "system_message", custom_message)):
-            st.session_state["custom_message"] = custom_message
             chat_manager.reset_conversation_history(preserve_history=True)
         
         st.divider()
         st.write(f"**EC2 Instance ID**: {instance_id}")
 else:
     st.write("No chat selected. Please start a new chat or select an existing one from the sidebar.")
+    
