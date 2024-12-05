@@ -33,7 +33,13 @@ class ConversationManager:
         self.max_tokens = max_tokens
         self.token_budget = token_budget
         self.system_message = "Hello! I'm Memora, your AI assistant. How can I help you today?"
+        self.additional_role_play = ""
         self.conversation_history = self.load_conversation_history() or [{"role": "system", "content": self.system_message}]
+
+    def update_system_message(self, system_message, additional_role_play):
+        self.system_message = system_message
+        self.additional_role_play = additional_role_play
+        self.reset_conversation_history(preserve_history=True)
 
     def load_conversation_history(self):
         """Load conversation history from SQLite database."""
@@ -125,7 +131,7 @@ class ConversationManager:
         return ai_response
     
     def reset_conversation_history(self, preserve_history=True):
-        system_message_entry = {"role": "system", "content": self.system_message}
+        system_message_entry = {"role": "system", "content": self.system_message + "\n\n" + self.additional_role_play}
         if preserve_history:
             if self.conversation_history:
                 self.conversation_history[0] = system_message_entry
@@ -382,18 +388,12 @@ if chat_selection is not None and chat_selection < len(st.session_state['chats']
         set_token = st.slider("Output Word Limit", min_value=10, max_value=500, value=DEFAULT_MAX_TOKENS, step=1, disabled=False)
         chat_manager.max_tokens = set_token
 
-        set_temp = st.slider("Performance", min_value=0.0, max_value=1.0, value=DEFAULT_TEMPERATURE, step=0.1, disabled=False)
+        set_temp = st.slider("Temperature", min_value=0.0, max_value=1.0, value=DEFAULT_TEMPERATURE, step=0.1, disabled=False)
         chat_manager.temperature = set_temp
 
-        set_custom_message = st.selectbox("System Message", ("Custom", "Professional", "Friendly", "Humorous"), key="system_message_selectbox")
+        set_custom_message = st.selectbox("Behavior", ("Professional", "Friendly", "Humorous"), key="system_message_selectbox")
 
-        if set_custom_message == "Custom":
-            custom_message = st.text_area(
-                "Custom System Message",
-                key="custom_message",
-                value=chat_manager.system_message
-            )
-        elif set_custom_message == "Professional":
+        if set_custom_message == "Professional":
             with open('src/professional.txt', 'r') as file:
                 custom_message = file.read()
         elif set_custom_message == "Friendly":
@@ -403,11 +403,20 @@ if chat_selection is not None and chat_selection < len(st.session_state['chats']
             with open('src/humorous.txt', 'r') as file:
                 custom_message = file.read()
 
-        if st.button("Set Custom Message", on_click=lambda: setattr(chat_manager, "system_message", custom_message)):
-            chat_manager.reset_conversation_history(preserve_history=True)
-        
+        additional_role_play = st.text_area("Looking to add some vibe?", key="additional_role_play")
+
+        def set_system_message():
+            chat_manager.update_system_message(custom_message, additional_role_play)
+
+        if st.button("Vibe Up!", on_click=set_system_message):
+            pass
+
+        # Ensure the system message is updated when the role is changed
+        if st.session_state.get("system_message_selectbox") != set_custom_message:
+            chat_manager.update_system_message(custom_message, additional_role_play)
+            st.session_state["system_message_selectbox"] = set_custom_message
         st.divider()
         st.write(f"**EC2 Instance ID**: {instance_id}")
+
 else:
     st.write("No chat selected. Please start a new chat or select an existing one from the sidebar.")
-    
