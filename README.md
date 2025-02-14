@@ -17,7 +17,7 @@ To get started with the project, follow these steps:
 
 1. **Clone the repository**:
     ```bash
-    git clone https://github.com/MFRDS/Team2-CDK-Chatbot.git
+    git clone https://github.com/TafazzulAffan/Memora-Chatbot.git
     ```
 
 2. **Install the required libraries**:
